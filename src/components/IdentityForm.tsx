@@ -5,19 +5,51 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-interface IdentityFormProps {
-  onSubmit: (data: { name: string; age: string; gender: string }) => void;
+export interface UserIdentity {
+  name: string;
+  age: number;
+  gender: string;
 }
 
-export const IdentityForm = ({ onSubmit }: IdentityFormProps) => {
-  const [name, setName] = useState("");
-  const [age, setAge] = useState("");
-  const [gender, setGender] = useState("");
+interface IdentityFormProps {
+  onSubmit: (identity: UserIdentity) => void;
+}
+
+export default function IdentityForm({ onSubmit }: IdentityFormProps) {
+  const [name, setName] = useState('');
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('');
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!name.trim()) {
+      newErrors.name = 'Nama harus diisi';
+    }
+
+    const ageNum = parseInt(age);
+    if (!age || isNaN(ageNum) || ageNum < 10 || ageNum > 100) {
+      newErrors.age = 'Umur harus antara 10-100 tahun';
+    }
+
+    if (!gender) {
+      newErrors.gender = 'Jenis kelamin harus dipilih';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name && age && gender) {
-      onSubmit({ name, age, gender });
+
+    if (validateForm()) {
+      onSubmit({
+        name: name.trim(),
+        age: parseInt(age),
+        gender
+      });
     }
   };
 
