@@ -1,82 +1,103 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-// ... (Interface dan Tipe tidak berubah)
 interface IdentityFormProps {
   onSubmit: (data: { name: string; age: string; gender: string }) => void;
 }
-type FormErrors = {
-  name?: string;
-  age?: string;
-  gender?: string;
-};
-
 
 export const IdentityForm = ({ onSubmit }: IdentityFormProps) => {
-  // ... (Semua state dan logic tidak berubah)
-  const [formData, setFormData] = useState({ name: "", age: "", gender: "" });
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [isFormValid, setIsFormValid] = useState(false);
-
-  const validate = () => {
-    const newErrors: FormErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Nama lengkap tidak boleh kosong.";
-    const ageNum = Number(formData.age);
-    if (!formData.age) {
-      newErrors.age = "Umur tidak boleh kosong.";
-    } else if (isNaN(ageNum) || ageNum < 10 || ageNum > 100) {
-      newErrors.age = "Umur harus antara 10 dan 100 tahun.";
-    }
-    if (!formData.gender) newErrors.gender = "Pilih salah satu jenis kelamin.";
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  useEffect(() => {
-    setIsFormValid(validate());
-  }, [formData]);
-  
-  const handleChange = (field: 'name' | 'age' | 'gender', value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
-      onSubmit(formData);
+    if (name && age && gender) {
+      onSubmit({ name, age, gender });
     }
   };
 
-
   return (
-    // [PERUBAHAN] Latar belakang utama
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 to-slate-950 text-slate-50">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full max-w-md"
-      >
-        {/* [PERUBAHAN] Efek kartu menjadi glassmorphism */}
-        <Card className="w-full bg-slate-900/50 backdrop-blur-sm border border-slate-700 shadow-2xl shadow-teal-500/10">
-          <CardHeader className="space-y-2 text-center">
-            {/* [PERUBAHAN] Gradasi warna judul */}
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-              Tes NPD
-            </CardTitle>
-            {/* [PERUBAHAN] Warna teks deskripsi */}
-            <CardDescription className="text-base text-slate-400">
-              Asesmen Kepribadian Narsistik - 50 Pertanyaan
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                {/* [PERUBAHAN] Warna teks label */}
-                <Label htmlFor="name" className="text
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-secondary/20 to-background">
+      <Card className="w-full max-w-md shadow-[var(--shadow-soft)] border-border/50">
+        <CardHeader className="space-y-2">
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Tes NPD
+          </CardTitle>
+          <CardDescription className="text-base">
+            Asesmen Kepribadian Narsistik - 50 Pertanyaan
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium">
+                Nama Lengkap
+              </Label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Masukkan nama Anda"
+                required
+                className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="age" className="text-sm font-medium">
+                Umur
+              </Label>
+              <Input
+                id="age"
+                type="number"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                placeholder="Masukkan umur Anda"
+                required
+                min="10"
+                max="100"
+                className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Jenis Kelamin</Label>
+              <RadioGroup value={gender} onValueChange={setGender}>
+                <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                  <RadioGroupItem value="Laki-laki" id="male" />
+                  <Label htmlFor="male" className="cursor-pointer flex-1">
+                    Laki-laki
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                  <RadioGroupItem value="Perempuan" id="female" />
+                  <Label htmlFor="female" className="cursor-pointer flex-1">
+                    Perempuan
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300"
+              size="lg"
+            >
+              Mulai Tes
+            </Button>
+
+            <p className="text-xs text-muted-foreground text-center pt-2">
+              Tes ini memakan waktu sekitar 10-15 menit untuk diselesaikan
+            </p>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
