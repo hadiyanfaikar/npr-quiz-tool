@@ -1,134 +1,103 @@
-import { useState } from 'react';
-import { User } from 'lucide-react';
-
-export interface UserIdentity {
-  name: string;
-  age: number;
-  gender: string;
-}
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface IdentityFormProps {
-  onSubmit: (identity: UserIdentity) => void;
+  onSubmit: (data: { name: string; age: string; gender: string }) => void;
 }
 
-export default function IdentityForm({ onSubmit }: IdentityFormProps) {
-  // 1. Menggunakan satu state object untuk form agar lebih rapi
-  const [formData, setFormData] = useState({
-    name: '',
-    age: '',
-    gender: '',
-  });
-
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  const validateForm = () => {
-    const { name, age, gender } = formData;
-    const newErrors: { [key: string]: string } = {};
-
-    if (!name.trim()) {
-      newErrors.name = 'Nama harus diisi';
-    }
-
-    const ageNum = parseInt(age);
-    if (!age || isNaN(ageNum) || ageNum < 10 || ageNum > 100) {
-      newErrors.age = 'Umur harus antara 10-100 tahun';
-    }
-
-    if (!gender) {
-      newErrors.gender = 'Jenis kelamin harus dipilih';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+export const IdentityForm = ({ onSubmit }: IdentityFormProps) => {
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      onSubmit({
-        name: formData.name.trim(),
-        age: parseInt(formData.age),
-        gender: formData.gender,
-      });
+    if (name && age && gender) {
+      onSubmit({ name, age, gender });
     }
   };
-  
-  // 2. Membuat satu handler untuk mengelola perubahan input
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData(prev => ({ ...prev, [id]: value }));
-  };
-
-  const handleGenderSelect = (gender: string) => {
-    setFormData(prev => ({ ...prev, gender }));
-  };
-
-  const isFormIncomplete = !formData.name || !formData.age || !formData.gender;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <div className="flex justify-center mb-6">
-          <div className="bg-slate-100 p-4 rounded-full">
-            <User className="w-12 h-12 text-slate-700" />
-          </div>
-        </div>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-secondary/20 to-background">
+      <Card className="w-full max-w-md shadow-[var(--shadow-soft)] border-border/50">
+        <CardHeader className="space-y-2">
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Tes NPD
+          </CardTitle>
+          <CardDescription className="text-base">
+            Asesmen Kepribadian Narsistik - 50 Pertanyaan
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium">
+                Nama Lengkap
+              </Label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Masukkan nama Anda"
+                required
+                className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
 
-        <h1 className="text-3xl font-bold text-slate-800 text-center mb-2">
-          Tes NPD
-        </h1>
-        <p className="text-slate-600 text-center mb-8">
-          Silakan isi identitas Anda untuk memulai tes
-        </p>
+            <div className="space-y-2">
+              <Label htmlFor="age" className="text-sm font-medium">
+                Umur
+              </Label>
+              <Input
+                id="age"
+                type="number"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                placeholder="Masukkan umur Anda"
+                required
+                min="10"
+                max="100"
+                className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-2">
-              Nama Lengkap
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={formData.name}
-              onChange={handleChange}
-              // 3. Perbaikan styling: border berubah warna saat focus, bukan transparan
-              className={`w-full px-4 py-3 rounded-lg border ${
-                errors.name ? 'border-red-500 ring-red-200' : 'border-slate-300'
-              } focus:ring-2 focus:ring-slate-400 focus:border-slate-500 outline-none transition-all`}
-              placeholder="Masukkan nama lengkap"
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-            )}
-          </div>
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Jenis Kelamin</Label>
+              <RadioGroup value={gender} onValueChange={setGender}>
+                <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                  <RadioGroupItem value="Laki-laki" id="male" />
+                  <Label htmlFor="male" className="cursor-pointer flex-1">
+                    Laki-laki
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                  <RadioGroupItem value="Perempuan" id="female" />
+                  <Label htmlFor="female" className="cursor-pointer flex-1">
+                    Perempuan
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
 
-          <div>
-            <label htmlFor="age" className="block text-sm font-medium text-slate-700 mb-2">
-              Umur
-            </label>
-            <input
-              type="number"
-              id="age"
-              value={formData.age}
-              onChange={handleChange}
-              className={`w-full px-4 py-3 rounded-lg border ${
-                errors.age ? 'border-red-500 ring-red-200' : 'border-slate-300'
-              } focus:ring-2 focus:ring-slate-400 focus:border-slate-500 outline-none transition-all`}
-              placeholder="Masukkan umur"
-              min="10"
-              max="100"
-            />
-            {errors.age && (
-              <p className="text-red-500 text-sm mt-1">{errors.age}</p>
-            )}
-          </div>
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300"
+              size="lg"
+            >
+              Mulai Tes
+            </Button>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Jenis Kelamin
-            </label>
-            {/* 4. Menambahkan border error pada container tombol */}
-            <div className={`grid grid-cols-2 gap-4 p-1 rounded-lg border-2 ${errors.gender ? 'border-red-500' : 'border-transparent'}`}>
-              <button
-                type="button"
-                onClick={() =>
+            <p className="text-xs text-muted-foreground text-center pt-2">
+              Tes ini memakan waktu sekitar 10-15 menit untuk diselesaikan
+            </p>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
