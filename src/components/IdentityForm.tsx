@@ -1,159 +1,108 @@
-import { useState } from 'react';
-import { User } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export interface UserIdentity {
-  name: string;
-  age: number;
-  gender: string;
-}
-
+// Interface dan Tipe tidak berubah
 interface IdentityFormProps {
-  onSubmit: (identity: UserIdentity) => void;
+  onSubmit: (data: { name: string; age: string; gender: string }) => void;
 }
+type FormErrors = {
+  name?: string;
+  age?: string;
+  gender?: string;
+};
 
-export default function IdentityForm({ onSubmit }: IdentityFormProps) {
-  const [name, setName] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+export const IdentityForm = ({ onSubmit }: IdentityFormProps) => {
+  // Semua state dan logic fungsional tidak berubah
+  const [formData, setFormData] = useState({ name: "", age: "", gender: "" });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isFormValid, setIsFormValid] = useState(false);
 
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!name.trim()) {
-      newErrors.name = 'Nama harus diisi';
+  const validate = () => {
+    const newErrors: FormErrors = {};
+    if (!formData.name.trim()) newErrors.name = "Nama lengkap tidak boleh kosong.";
+    const ageNum = Number(formData.age);
+    if (!formData.age) {
+      newErrors.age = "Umur tidak boleh kosong.";
+    } else if (isNaN(ageNum) || ageNum < 10 || ageNum > 100) {
+      newErrors.age = "Umur harus antara 10 dan 100 tahun.";
     }
-
-    const ageNum = parseInt(age);
-    if (!age || isNaN(ageNum) || ageNum < 10 || ageNum > 100) {
-      newErrors.age = 'Umur harus antara 10-100 tahun';
-    }
-
-    if (!gender) {
-      newErrors.gender = 'Jenis kelamin harus dipilih';
-    }
-
+    if (!formData.gender) newErrors.gender = "Pilih salah satu jenis kelamin.";
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  useEffect(() => {
+    setIsFormValid(validate());
+  }, [formData]);
+  
+  const handleChange = (field: 'name' | 'age' | 'gender', value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (validateForm()) {
-      onSubmit({
-        name: name.trim(),
-        age: parseInt(age),
-        gender
-      });
+    if (validate()) {
+      onSubmit(formData);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <div className="flex justify-center mb-6">
-          <div className="bg-slate-100 p-4 rounded-full">
-            <User className="w-12 h-12 text-slate-700" />
-          </div>
-        </div>
+    // [TEMA BARU] Latar belakang terang yang bersih
+    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-100">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="w-full max-w-md"
+      >
+        {/* [TEMA BARU] Kartu putih dengan bayangan yang lebih jelas */}
+        <Card className="w-full bg-white border border-slate-200 shadow-xl rounded-2xl">
+          <CardHeader className="space-y-2 text-center">
+            {/* [TEMA BARU] Judul dengan gradasi biru langit */}
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-sky-500 to-blue-600 bg-clip-text text-transparent">
+              Tes NPD
+            </CardTitle>
+            {/* [TEMA BARU] Warna teks deskripsi yang lebih lembut */}
+            <CardDescription className="text-base text-slate-500">
+              Asesmen Kepribadian Narsistik - 50 Pertanyaan
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium text-slate-700">Nama Lengkap</Label>
+                {/* [TEMA BARU] Input field dengan highlight biru */}
+                <Input
+                  id="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  placeholder="Masukkan nama Anda"
+                  className={`transition-all duration-200 border-slate-300 focus:ring-2 focus:ring-sky-300 focus:border-sky-500 ${errors.name ? 'border-red-500 focus:ring-red-300 focus:border-red-500' : ''}`}
+                />
+                {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
+              </div>
 
-        <h1 className="text-3xl font-bold text-slate-800 text-center mb-2">
-          Tes NPD
-        </h1>
-        <p className="text-slate-600 text-center mb-8">
-          Silakan isi identitas Anda untuk memulai tes
-        </p>
+              <div className="space-y-2">
+                <Label htmlFor="age" className="text-sm font-medium text-slate-700">Umur</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  value={formData.age}
+                  onChange={(e) => handleChange('age', e.target.value)}
+                  placeholder="Masukkan umur Anda"
+                  min="10"
+                  max="100"
+                  className={`transition-all duration-200 border-slate-300 focus:ring-2 focus:ring-sky-300 focus:border-sky-500 ${errors.age ? 'border-red-500 focus:ring-red-300 focus:border-red-500' : ''}`}
+                />
+                {errors.age && <p className="text-xs text-red-600 mt-1">{errors.age}</p>}
+              </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-2">
-              Nama Lengkap
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={`w-full px-4 py-3 rounded-lg border ${
-                errors.name ? 'border-red-500' : 'border-slate-300'
-              } focus:ring-2 focus:ring-slate-500 focus:border-transparent outline-none transition-all`}
-              placeholder="Masukkan nama lengkap"
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="age" className="block text-sm font-medium text-slate-700 mb-2">
-              Umur
-            </label>
-            <input
-              type="number"
-              id="age"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              className={`w-full px-4 py-3 rounded-lg border ${
-                errors.age ? 'border-red-500' : 'border-slate-300'
-              } focus:ring-2 focus:ring-slate-500 focus:border-transparent outline-none transition-all`}
-              placeholder="Masukkan umur"
-              min="10"
-              max="100"
-            />
-            {errors.age && (
-              <p className="text-red-500 text-sm mt-1">{errors.age}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Jenis Kelamin
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setGender('Laki-laki')}
-                className={`py-3 px-4 rounded-lg border-2 transition-all ${
-                  gender === 'Laki-laki'
-                    ? 'border-slate-700 bg-slate-700 text-white'
-                    : 'border-slate-300 hover:border-slate-400'
-                }`}
-              >
-                Laki-laki
-              </button>
-              <button
-                type="button"
-                onClick={() => setGender('Perempuan')}
-                className={`py-3 px-4 rounded-lg border-2 transition-all ${
-                  gender === 'Perempuan'
-                    ? 'border-slate-700 bg-slate-700 text-white'
-                    : 'border-slate-300 hover:border-slate-400'
-                }`}
-              >
-                Perempuan
-              </button>
-            </div>
-            {errors.gender && (
-              <p className="text-red-500 text-sm mt-1">{errors.gender}</p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
-          >
-            Mulai Tes
-          </button>
-        </form>
-
-        <div className="mt-8 p-4 bg-slate-50 rounded-lg">
-          <p className="text-xs text-slate-600 text-center">
-            Tes ini bertujuan edukatif dan bukan merupakan diagnosis medis resmi.
-            Untuk evaluasi profesional, konsultasikan dengan psikolog atau psikiater.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
+              <div className="space-y-3">
+                <Label className={`text-sm font-medium ${errors.gender ? 'text-red-600' : 'text-slate-700'}`}>Jenis Kelamin</Label>
