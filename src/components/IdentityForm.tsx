@@ -1,134 +1,103 @@
-import { useState } from 'react';
-import { User } from 'lucide-react';
-// 1. Pastikan semua komponen UI yang dibutuhkan sudah di-import
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export interface UserIdentity {
-  name: string;
-  age: number;
-  gender: string;
-}
-
 interface IdentityFormProps {
-  onSubmit: (identity: UserIdentity) => void;
+  onSubmit: (data: { name: string; age: string; gender: string }) => void;
 }
 
-// Logika dari kode kedua Anda sudah bagus, jadi kita pertahankan
-export default function IdentityForm({ onSubmit }: IdentityFormProps) {
-  const [name, setName] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!name.trim()) {
-      newErrors.name = 'Nama harus diisi';
-    }
-
-    const ageNum = parseInt(age);
-    if (!age || isNaN(ageNum) || ageNum < 10 || ageNum > 100) {
-      newErrors.age = 'Umur harus antara 10-100 tahun';
-    }
-
-    if (!gender) {
-      newErrors.gender = 'Jenis kelamin harus dipilih';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+export const IdentityForm = ({ onSubmit }: IdentityFormProps) => {
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      onSubmit({
-        name: name.trim(),
-        age: parseInt(age),
-        gender
-      });
+    if (name && age && gender) {
+      onSubmit({ name, age, gender });
     }
   };
 
-  // 2. Di sini kita gunakan struktur JSX dari "source code yang benar"
-  //    dan menghubungkannya dengan logika di atas.
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-100">
-      <Card className="w-full max-w-md shadow-xl rounded-2xl">
-        <CardHeader className="text-center">
-           <div className="flex justify-center mb-4">
-             <div className="bg-slate-100 p-4 rounded-full">
-               <User className="w-10 h-10 text-slate-600" />
-             </div>
-           </div>
-          <CardTitle className="text-3xl font-bold text-slate-800">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-secondary/20 to-background">
+      <Card className="w-full max-w-md shadow-[var(--shadow-soft)] border-border/50">
+        <CardHeader className="space-y-2">
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Tes NPD
           </CardTitle>
-          <CardDescription className="text-slate-600">
-            Silakan isi identitas Anda untuk memulai tes
+          <CardDescription className="text-base">
+            Asesmen Kepribadian Narsistik - 50 Pertanyaan
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name">Nama Lengkap</Label>
+              <Label htmlFor="name" className="text-sm font-medium">
+                Nama Lengkap
+              </Label>
               <Input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Masukkan nama Anda"
-                className={errors.name ? 'border-red-500' : ''}
+                required
+                className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
               />
-              {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="age">Umur</Label>
+              <Label htmlFor="age" className="text-sm font-medium">
+                Umur
+              </Label>
               <Input
                 id="age"
                 type="number"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
                 placeholder="Masukkan umur Anda"
+                required
                 min="10"
                 max="100"
-                className={errors.age ? 'border-red-500' : ''}
+                className="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
               />
-              {errors.age && <p className="text-sm text-red-600 mt-1">{errors.age}</p>}
             </div>
 
             <div className="space-y-3">
-              <Label>Jenis Kelamin</Label>
-              <RadioGroup value={gender} onValueChange={setGender} className={errors.gender ? 'border border-red-500 rounded-lg p-1' : ''}>
-                <div className="flex items-center space-x-2">
+              <Label className="text-sm font-medium">Jenis Kelamin</Label>
+              <RadioGroup value={gender} onValueChange={setGender}>
+                <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-secondary/50 transition-colors">
                   <RadioGroupItem value="Laki-laki" id="male" />
-                  <Label htmlFor="male">Laki-laki</Label>
+                  <Label htmlFor="male" className="cursor-pointer flex-1">
+                    Laki-laki
+                  </Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-secondary/50 transition-colors">
                   <RadioGroupItem value="Perempuan" id="female" />
-                  <Label htmlFor="female">Perempuan</Label>
+                  <Label htmlFor="female" className="cursor-pointer flex-1">
+                    Perempuan
+                  </Label>
                 </div>
               </RadioGroup>
-              {errors.gender && <p className="text-sm text-red-600 mt-1">{errors.gender}</p>}
             </div>
 
-            <Button type="submit" className="w-full" size="lg">
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-primary to-accent hover:shadow-[var(--shadow-glow)] transition-all duration-300"
+              size="lg"
+            >
               Mulai Tes
             </Button>
+
+            <p className="text-xs text-muted-foreground text-center pt-2">
+              Tes ini memakan waktu sekitar 10-15 menit untuk diselesaikan
+            </p>
           </form>
-           <div className="mt-6 p-4 bg-slate-50 rounded-lg">
-             <p className="text-xs text-slate-600 text-center">
-               Tes ini bertujuan edukatif dan bukan merupakan diagnosis medis resmi.
-             </p>
-           </div>
         </CardContent>
       </Card>
     </div>
   );
-}
+};
